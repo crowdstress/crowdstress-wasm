@@ -1,18 +1,17 @@
 use crate::config;
-use crate::human::Human;
 use crowdstress_common::prelude::*;
 use js_sys::Math;
 
 struct ExitExtended {
     probability: f64,
-    middle: Point,
+    section: Section,
     vector_to_target: Vector,
 }
 
-pub fn get_target(human: &Human, exit_sections: &Vec<Exit>) -> Option<Point> {
+pub fn get_target(human: &Human, exit_sections: &Vec<Exit>) -> Option<Section> {
     #[derive(Copy, Clone)]
     struct ExitGeometry {
-        middle: Point,
+        section: Section,
         vector_to_target: Vector,
         vector_from_human: Vector,
     }
@@ -37,7 +36,7 @@ pub fn get_target(human: &Human, exit_sections: &Vec<Exit>) -> Option<Point> {
             };
             let vector_to_target = vector_to_target.product(factor);
             ExitGeometry {
-                middle: section_middle,
+                section: exit.section,
                 vector_to_target,
                 vector_from_human,
             }
@@ -57,7 +56,7 @@ pub fn get_target(human: &Human, exit_sections: &Vec<Exit>) -> Option<Point> {
             } else {
                 1.0
             },
-            middle: exit.middle,
+            section: exit.section,
             vector_to_target: exit.vector_to_target,
         })
         .collect();
@@ -66,9 +65,8 @@ pub fn get_target(human: &Human, exit_sections: &Vec<Exit>) -> Option<Point> {
 
     Option::from(
         selected_exit
-            .vector_to_target
-            .to_line(selected_exit.middle)
-            .end,
+            .section
+            .move_to(&selected_exit.vector_to_target),
     )
 }
 

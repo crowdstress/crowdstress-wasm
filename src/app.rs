@@ -1,4 +1,3 @@
-use crate::human::Human;
 use crate::{behaviour, config, physics};
 use crowdstress_common::prelude::*;
 use wasm_bindgen::JsValue;
@@ -19,13 +18,14 @@ impl App {
         for human in &self.humans {
             let mut human_vectors: Vec<Vector> = Vec::new();
             let mut passed_exits = human.passed_exits.clone();
-            let mut target = human.target;
+            let mut target_section = human.target_section;
 
-            match target {
-                Some(point) => {
-                    human_vectors.push(physics::f1(&human, &point));
+            match target_section {
+                Some(section) => {
+                    let section_middle = geometry::get_section_middle(&section);
+                    human_vectors.push(physics::f1(&human, &section_middle));
                     for exit in &self.exits {
-                        let is_passed = is_exit_passed(&exit, &human.coords, &point);
+                        let is_passed = geometry::is_point_belongs_to_line(&section, &human.coords);
                         if is_passed && !passed_exits.contains(&exit.id) {
                             web_sys::console::log_3(
                                 &"Exit".into(),
@@ -33,7 +33,7 @@ impl App {
                                 &"passed".into(),
                             );
                             passed_exits.push(String::from(&exit.id));
-                            target = None;
+                            target_section = None;
                             break;
                         }
                     }
@@ -47,7 +47,7 @@ impl App {
                             let exit_target = behaviour::get_target(&human, &possible_exits);
 
                             match exit_target {
-                                Some(point) => target = Option::from(point),
+                                Some(section) => target_section = Option::from(section),
                                 None => {
                                     web_sys::console::log_1(&"No target - destroy".into());
                                     continue;
@@ -103,7 +103,7 @@ impl App {
                     x: human.coords.x + dr.x,
                     y: human.coords.y + dr.y,
                 },
-                target,
+                target_section,
                 panic: if result_vector.get_length() > 800.0 {
                     100
                 } else {
@@ -156,20 +156,4 @@ fn get_room(rooms: &Vec<Room>, coords: &Point) -> Option<Room> {
     }
 
     current_room
-}
-
-fn is_exit_passed(exit: &Exit, coords: &Point, target: &Point) -> bool {
-    let human_to_target_vector = Vector::from_points(&coords, &target);
-    let vector = Vector::from_points(&exit.section.start, &exit.section.end)
-        .normalize()
-        .perpendicular()
-        .product(config::TARGET_FROM_EXIT_DISTANCE);
-    let factor = if vector.projection_to(&human_to_target_vector) < 0.0 {
-        -1.0
-    } else {
-        1.0
-    };
-    let vector = vector.product(factor);
-    let section = exit.section.move_to(&vector);
-    geometry::is_point_belongs_to_line(&section, &coords)
 }
