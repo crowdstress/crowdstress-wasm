@@ -38,7 +38,7 @@ jobs:
           registry-url: https://npm.pkg.github.com/
 
       - name: Install
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        run: cargo install --git https://github.com/rustwasm/wasm-pack.git
 
       - name: Build
         run: wasm-pack build --scope crowdstress
