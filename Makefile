@@ -1,4 +1,4 @@
-VERSION = $(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("%s",$$2) }' Cargo.toml)
+VERSION = $(shell awk -F ' = ' '$$1 ~ /version/ { gsub("\"", "-", $$2); printf("%s",$$2) }' Cargo.toml | cut -d- -f2)
 
 .PHONY: major
 major:
