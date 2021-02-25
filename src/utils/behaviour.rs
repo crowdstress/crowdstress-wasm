@@ -9,7 +9,6 @@ struct ExitExtended {
 }
 
 pub fn get_target(human: &Human, exit_sections: &Vec<Exit>) -> Option<Section> {
-    #[derive(Copy, Clone)]
     struct ExitGeometry {
         section: Section,
         vector_to_target: Vector,

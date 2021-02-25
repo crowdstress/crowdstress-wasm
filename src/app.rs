@@ -24,17 +24,21 @@ impl App {
                 Some(section) => {
                     let section_middle = geometry::get_section_middle(&section);
                     human_vectors.push(physics::f1(&human, &section_middle));
-                    for exit in &self.exits {
-                        let is_passed = geometry::is_point_belongs_to_line(&section, &human.coords);
-                        if is_passed && !passed_exits.contains(&exit.id) {
-                            web_sys::console::log_3(
-                                &"Exit".into(),
-                                &String::from(&exit.id).into(),
-                                &"passed".into(),
-                            );
-                            passed_exits.push(String::from(&exit.id));
-                            target_section = None;
-                            break;
+
+                    if geometry::is_point_belongs_to_line(&section, &human.coords) {
+                        target_section = None;
+                    } else {
+                        for exit in &self.exits {
+                            let is_passed =
+                                geometry::is_point_belongs_to_line(&exit.section, &human.coords);
+                            if is_passed && !passed_exits.contains(&exit.id) {
+                                web_sys::console::log_3(
+                                    &"Exit".into(),
+                                    &String::from(&exit.id).into(),
+                                    &"passed".into(),
+                                );
+                                passed_exits.push(String::from(&exit.id));
+                            }
                         }
                     }
                 }
