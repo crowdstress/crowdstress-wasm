@@ -1,4 +1,4 @@
-VERSION = $(shell cargo pkgid | grep -Po "(?<=\#)(.*)")
+VERSION = $(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("%s",$$2) }' Cargo.toml)
 
 .PHONY: major
 major:
